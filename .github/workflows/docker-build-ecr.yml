@@ -45,3 +45,8 @@ jobs:
         run: |
           echo "Docker Image Specific: $ECR_REGISTRY/$REPO_NAME:$IMAGE_TAG"
           echo "Docker Image Latest: $ECR_REGISTRY/$REPO_NAME:latest"
+
+      - name: Restart ECS Service - Deployment
+        run: |
+          aws ecs update-service --cluster url-analyzer-ecs-cluster --service url-analyzer-ecs-service --force-new-deployment
+          echo "ECS Service Restarted"
