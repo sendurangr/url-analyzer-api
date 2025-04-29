@@ -8,4 +8,5 @@ import (
 
 func SetupRouters(router *gin.Engine) {
 	router.GET("/", handler.HealthCheckHandler)
+	router.GET("/url-analyzer", handler.UrlAnalyzerHandler)
 }
