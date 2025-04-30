@@ -3,6 +3,8 @@ package main
 import (
 	"github.com/sendurangr/url-analyzer-api/internal/middleware"
 	"github.com/sendurangr/url-analyzer-api/internal/routes"
+	"log/slog"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
@@ -11,10 +13,15 @@ func main() {
 	r := gin.Default()
 
 	r.Use(middleware.Cors())
-	routes.SetupRouters(r)
+
+	apiGroup := r.Group("/api/v1")
+
+	routes.SetupRouters(apiGroup)
 
 	err := r.Run(":8080")
+
 	if err != nil {
-		return
+		slog.Error("Server startup failed", "error", err)
+		os.Exit(1)
 	}
 }

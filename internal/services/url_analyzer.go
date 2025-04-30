@@ -227,6 +227,7 @@ func checkSingleLink(ctx context.Context, link string, baseURL *url.URL) (isInte
 	isInternal = linkURL.Host == "" || linkURL.Host == baseURL.Host
 
 	req, err := http.NewRequestWithContext(ctx, http.MethodHead, link, nil)
+
 	if err != nil {
 		return isInternal, false
 	}
