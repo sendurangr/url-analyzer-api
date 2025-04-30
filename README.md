@@ -1,15 +1,17 @@
-# URL Analyzer Backend
+# URL Analyzer - Backend
 
 <!-- TOC -->
-* [URL Analyzer Backend](#url-analyzer-backend)
-  * [💻 Local Setup Guide](#-local-setup-guide)
-    * [Prerequisites](#prerequisites)
-    * [Installation](#installation)
-  * [🤙 API Documentation](#-api-documentation)
-  * [🪐 Deployment](#-deployment)
-    * [✅ CI/CD](#-cicd)
-  * [🔅 Linked Repositories](#-linked-repositories)
-  * [Packages Used](#packages-used)
+
+* [URL Analyzer - Backend](#url-analyzer---backend)
+    * [💻 Local Setup Guide](#-local-setup-guide)
+        * [Prerequisites](#prerequisites)
+        * [Installation](#installation)
+    * [🤙 API Documentation](#-api-documentation)
+    * [🪐 Deployment](#-deployment)
+        * [✅ CI/CD](#-cicd)
+    * [🔅 Linked Repositories](#-linked-repositories)
+    * [Packages Used](#packages-used)
+
 <!-- TOC -->
 
 ## 💻 Local Setup Guide
@@ -65,18 +67,18 @@ curl --request GET \
 
 - The **CI/CD** pipeline is set up using **GitHub Actions**.
 - The pipeline is triggered on every push to the `master` branch.
-- The pipeline builds the Docker image and deploys it to AWS App Runner through
+- The pipeline builds the Docker image and deploys it to AWS App Runner through <br>
   `GitHub Actions -> AWS ECR -> AWS App Runner`.
 
 ## 🔅 Linked Repositories
 
-| Services                  | Repositories                                                                        |
-|---------------------------|-------------------------------------------------------------------------------------|
-| Backend                   | https://github.com/sendurangr/url-analyzer-api    (Current)                         |
-| Deployment Infrastructure | https://github.com/sendurangr/url-analyzer-client  (Provisioning through Terraform) |
-| Frontend                  | https://github.com/sendurangr/url-analyzer-infrastructure                           |
+| Services                        | Repositories                                                                                    |
+|---------------------------------|-------------------------------------------------------------------------------------------------|
+| Backend - Golang                | https://github.com/sendurangr/url-analyzer-api    (Current)                                     |
+| Deployment Infrastructure - AWS | https://github.com/sendurangr/url-analyzer-infrastructure <br> (Provisioning through Terraform) |
+| Frontend - Angular              | https://github.com/sendurangr/url-analyzer-client                                               |
 
 ## Packages Used
 
 - `go-chi/chi` - A lightweight and idiomatic router for building Go HTTP services.
-- 
+- `golang.org/x/net/html` - A package for parsing HTML documents.
