@@ -91,13 +91,8 @@ func iterateThroughDOM(n *html.Node, result *model.AnalyzerResult, baseURL *url.
 			case "a":
 				extractLinksFromElementNode(n, baseURL, &links)
 			case "form":
-				for _, attr := range n.Attr {
-					if attr.Key == "action" && strings.Contains(strings.ToLower(attr.Val), "login") {
-						result.LoginFormDetected = true
-					}
-				}
+				detectLoginForm(n, result)
 			}
-
 		}
 
 		for c := n.FirstChild; c != nil; c = c.NextSibling {
@@ -175,6 +170,14 @@ func extractLinksFromElementNode(n *html.Node, baseURL *url.URL, links *[]string
 		if err == nil {
 			absURL := baseURL.ResolveReference(linkURL)
 			*links = append(*links, absURL.String())
+		}
+	}
+}
+
+func detectLoginForm(n *html.Node, result *model.AnalyzerResult) {
+	for _, attr := range n.Attr {
+		if attr.Key == "action" && strings.Contains(strings.ToLower(attr.Val), "login") {
+			result.LoginFormDetected = true
 		}
 	}
 }
