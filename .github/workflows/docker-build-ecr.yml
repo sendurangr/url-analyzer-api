@@ -45,3 +45,7 @@ jobs:
         run: |
           echo "Docker Image Specific: $ECR_REGISTRY/$REPO_NAME:$IMAGE_TAG"
           echo "Docker Image Latest: $ECR_REGISTRY/$REPO_NAME:latest"
+
+      - name: Deploy App Runner
+        run: |
+          aws apprunner start-deployment --service-arn arn:aws:apprunner:ap-south-1:369129104419:service/url-analyzer-app-runner/bc099d3d45b049e2b2ae05255f96038b
