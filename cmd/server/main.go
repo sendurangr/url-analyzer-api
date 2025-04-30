@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/sendurangr/url-analyzer-api/internal/middleware"
 	"github.com/sendurangr/url-analyzer-api/internal/routes"
 
 	"github.com/gin-gonic/gin"
@@ -9,6 +10,7 @@ import (
 func main() {
 	r := gin.Default()
 
+	r.Use(middleware.Cors())
 	routes.SetupRouters(r)
 
 	err := r.Run(":8080")
