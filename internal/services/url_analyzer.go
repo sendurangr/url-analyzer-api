@@ -2,12 +2,11 @@ package services
 
 import (
 	"context"
-	"errors"
+	"fmt"
 	"github.com/sendurangr/url-analyzer-api/internal/constants"
 	"github.com/sendurangr/url-analyzer-api/internal/model"
 	"golang.org/x/net/html"
-	"io"
-	"log"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"strings"
@@ -20,53 +19,55 @@ var httpClient = &http.Client{
 }
 
 func AnalyzePage(rawURL string) (*model.AnalyzerResult, error) {
-
-	currentTime := time.Now()
+	start := time.Now()
 
 	req, err := http.NewRequest("GET", rawURL, nil)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("creating request: %w", err)
 	}
 
-	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
-	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
-	req.Header.Set("Accept-Language", "en-US,en;q=0.5")
-	req.Header.Set("Connection", "keep-alive")
+	setHeaders(req)
 
 	resp, err := httpClient.Do(req)
 	if err != nil {
-		return nil, err
+		slog.Error("HTTP request failed", "url", rawURL, "error", err)
+		return nil, fmt.Errorf("performing request: %w", err)
 	}
-
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
-			log.Println(err)
+	defer func() {
+		if err := resp.Body.Close(); err != nil {
+			slog.Error("failed to close response body", "error", err)
 		}
-	}(resp.Body)
+	}()
 
 	if resp.StatusCode >= 400 {
-		return nil, errors.New("Failed to fetch from the url: HTTP Status " + resp.Status)
+		slog.Warn("non-OK HTTP response", "status", resp.StatusCode, "url", rawURL)
+		return nil, fmt.Errorf("HTTP error %d: %s", resp.StatusCode, http.StatusText(resp.StatusCode))
 	}
 
 	parsedURL, err := url.Parse(rawURL)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("parsing URL: %w", err)
 	}
 
 	doc, err := html.Parse(resp.Body)
 	if err != nil {
-		return nil, err
+		slog.Error("HTML parse failed", "url", rawURL, "error", err)
+		return nil, fmt.Errorf("parsing HTML: %w", err)
 	}
 
 	result := &model.AnalyzerResult{}
-
 	iterateThroughDOM(doc, result, parsedURL)
-
-	result.TimeTakenToAnalyze = float32(time.Since(currentTime).Seconds())
+	result.TimeTakenToAnalyze = float32(time.Since(start).Seconds())
 	result.Url = rawURL
 
 	return result, nil
+}
+
+func setHeaders(req *http.Request) {
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+	req.Header.Set("Accept-Language", "en-US,en;q=0.5")
+	req.Header.Set("Connection", "keep-alive")
 }
 
 func iterateThroughDOM(n *html.Node, result *model.AnalyzerResult, baseURL *url.URL) {

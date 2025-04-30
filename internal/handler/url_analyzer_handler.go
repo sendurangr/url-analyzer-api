@@ -6,23 +6,26 @@ import (
 	"github.com/sendurangr/url-analyzer-api/internal/utils"
 	"log/slog"
 	"net/http"
+	"net/url"
 )
 
 func UrlAnalyzerHandler(ctx *gin.Context) {
-	url := ctx.Query("url")
-	if url == "" {
+	rawURL := ctx.Query("url")
+	if rawURL == "" {
 		utils.RespondWithError(ctx, http.StatusBadRequest, "Missing 'url' query parameter")
 		return
 	}
 
-	response, err := services.AnalyzePage(url)
+	parsed, err := url.ParseRequestURI(rawURL)
+	if err != nil || (parsed.Scheme != "http" && parsed.Scheme != "https") {
+		utils.RespondWithError(ctx, http.StatusBadRequest, "Invalid or unsupported URL scheme")
+		return
+	}
 
+	response, err := services.AnalyzePage(rawURL)
 	if err != nil {
-		slog.Error("failed to analyze page",
-			"url", url,
-			"error", err,
-		)
-		utils.RespondWithError(ctx, http.StatusBadRequest, err.Error())
+		slog.Error("Failed to analyze page", "url", rawURL, "error", err)
+		utils.RespondWithError(ctx, http.StatusInternalServerError, err.Error())
 		return
 	}
 
