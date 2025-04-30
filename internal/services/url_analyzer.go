@@ -99,10 +99,12 @@ func extractHtmlVersionFromNode(n *html.Node, result *model.AnalyzerResult) {
 	}
 
 	if n.Type == html.DoctypeNode {
-		if strings.ToLower(n.Data) == "html" {
+		if strings.EqualFold(n.Data, "html") {
 			result.HTMLVersion = "HTML5"
+			return
 		} else {
 			result.HTMLVersion = "Older HTML or XHTML"
+			return
 		}
 	}
 
@@ -110,9 +112,11 @@ func extractHtmlVersionFromNode(n *html.Node, result *model.AnalyzerResult) {
 		for _, attr := range n.Attr {
 			if attr.Key == "lang" {
 				result.HTMLVersion = "HTML5"
+				return
 			}
 		}
 	}
+
 }
 
 func countHtmlTags(n *html.Node, result *model.AnalyzerResult) {
