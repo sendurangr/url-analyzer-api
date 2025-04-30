@@ -20,10 +20,24 @@ var httpClient = &http.Client{
 }
 
 func AnalyzePage(rawURL string) (*model.AnalyzerResult, error) {
-	resp, err := httpClient.Get(rawURL)
+
+	currentTime := time.Now()
+
+	req, err := http.NewRequest("GET", rawURL, nil)
 	if err != nil {
 		return nil, err
 	}
+
+	req.Header.Set("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36")
+	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
+	req.Header.Set("Accept-Language", "en-US,en;q=0.5")
+	req.Header.Set("Connection", "keep-alive")
+
+	resp, err := httpClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
@@ -32,12 +46,7 @@ func AnalyzePage(rawURL string) (*model.AnalyzerResult, error) {
 	}(resp.Body)
 
 	if resp.StatusCode >= 400 {
-		return nil, errors.New("Failed to fetch page: HTTP " + resp.Status)
-	}
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
+		return nil, errors.New("Failed to fetch from the url: HTTP Status " + resp.Status)
 	}
 
 	parsedURL, err := url.Parse(rawURL)
@@ -45,7 +54,7 @@ func AnalyzePage(rawURL string) (*model.AnalyzerResult, error) {
 		return nil, err
 	}
 
-	doc, err := html.Parse(strings.NewReader(string(body)))
+	doc, err := html.Parse(resp.Body)
 	if err != nil {
 		return nil, err
 	}
@@ -53,6 +62,9 @@ func AnalyzePage(rawURL string) (*model.AnalyzerResult, error) {
 	result := &model.AnalyzerResult{}
 
 	iterateThroughDOM(doc, result, parsedURL)
+
+	result.TimeTakenToAnalyze = float32(time.Since(currentTime).Seconds())
+	result.Url = rawURL
 
 	return result, nil
 }
@@ -62,18 +74,22 @@ func iterateThroughDOM(n *html.Node, result *model.AnalyzerResult, baseURL *url.
 
 	var collectLinks func(*html.Node)
 	collectLinks = func(n *html.Node) {
+
+		if n.Type == html.DoctypeNode {
+			extractHtmlVersionFromDoctypeNode(n, result)
+		}
+
 		if n.Type == html.ElementNode {
 			switch n.Data {
 			case "html":
-				extractHtmlVersionFromNode(n, result)
+				// when html.DoctypeNode is not present
+				extractHtmlVersionFromElementNode(n, result)
 			case "title":
-				if n.FirstChild != nil {
-					result.PageTitle = n.FirstChild.Data
-				}
+				extractTitleFromElementNode(n, result)
 			case "h1", "h2", "h3", "h4", "h5", "h6":
 				countHtmlTags(n, result)
 			case "a":
-				extractLinksFromNode(n, baseURL, &links)
+				extractLinksFromElementNode(n, baseURL, &links)
 			case "form":
 				for _, attr := range n.Attr {
 					if attr.Key == "action" && strings.Contains(strings.ToLower(attr.Val), "login") {
@@ -81,7 +97,9 @@ func iterateThroughDOM(n *html.Node, result *model.AnalyzerResult, baseURL *url.
 					}
 				}
 			}
+
 		}
+
 		for c := n.FirstChild; c != nil; c = c.NextSibling {
 			collectLinks(c)
 		}
@@ -92,31 +110,37 @@ func iterateThroughDOM(n *html.Node, result *model.AnalyzerResult, baseURL *url.
 	checkLinksConcurrently(links, baseURL, result)
 }
 
-func extractHtmlVersionFromNode(n *html.Node, result *model.AnalyzerResult) {
+func extractHtmlVersionFromDoctypeNode(n *html.Node, result *model.AnalyzerResult) {
+	if result.HTMLVersion != "" {
+		return
+	}
+
+	if strings.EqualFold(n.Data, "html") {
+		result.HTMLVersion = "HTML5"
+	} else {
+		result.HTMLVersion = "Older HTML or XHTML"
+	}
+}
+
+func extractHtmlVersionFromElementNode(n *html.Node, result *model.AnalyzerResult) {
 
 	if result.HTMLVersion != "" {
 		return
 	}
 
-	if n.Type == html.DoctypeNode {
-		if strings.EqualFold(n.Data, "html") {
+	for _, attr := range n.Attr {
+		if attr.Key == "lang" {
 			result.HTMLVersion = "HTML5"
 			return
-		} else {
-			result.HTMLVersion = "Older HTML or XHTML"
-			return
 		}
 	}
 
-	if n.Type == html.ElementNode && n.Data == "html" {
-		for _, attr := range n.Attr {
-			if attr.Key == "lang" {
-				result.HTMLVersion = "HTML5"
-				return
-			}
-		}
-	}
+}
 
+func extractTitleFromElementNode(n *html.Node, result *model.AnalyzerResult) {
+	if n.FirstChild != nil {
+		result.PageTitle = n.FirstChild.Data
+	}
 }
 
 func countHtmlTags(n *html.Node, result *model.AnalyzerResult) {
@@ -136,40 +160,23 @@ func countHtmlTags(n *html.Node, result *model.AnalyzerResult) {
 	}
 }
 
-func extractLinksFromNode(n *html.Node, baseURL *url.URL, links *[]string) {
+func extractLinksFromElementNode(n *html.Node, baseURL *url.URL, links *[]string) {
 	for _, attr := range n.Attr {
-		if attr.Key == "href" {
-			if strings.HasPrefix(attr.Val, "#") || attr.Val == "" {
-				continue
-			}
-			linkURL, err := url.Parse(attr.Val)
-			if err == nil {
-				absURL := baseURL.ResolveReference(linkURL)
-				*links = append(*links, absURL.String())
-			}
+		if attr.Key != "href" {
+			continue
+		}
+
+		if strings.HasPrefix(attr.Val, "#") || attr.Val == "" {
+			continue
+		}
+
+		linkURL, err := url.Parse(attr.Val)
+
+		if err == nil {
+			absURL := baseURL.ResolveReference(linkURL)
+			*links = append(*links, absURL.String())
 		}
 	}
-}
-
-func checkSingleLink(ctx context.Context, link string, baseURL *url.URL) (isInternal bool, isAccessible bool) {
-	linkURL, err := url.Parse(link)
-	if err != nil {
-		return false, false
-	}
-
-	isInternal = linkURL.Host == "" || linkURL.Host == baseURL.Host
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodHead, link, nil)
-	if err != nil {
-		return isInternal, false
-	}
-
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil || resp.StatusCode >= 400 {
-		return isInternal, false
-	}
-
-	return isInternal, true
 }
 
 func checkLinksConcurrently(links []string, baseURL *url.URL, result *model.AnalyzerResult) {
@@ -206,4 +213,25 @@ func checkLinksConcurrently(links []string, baseURL *url.URL, result *model.Anal
 			result.InaccessibleLinks++
 		}
 	}
+}
+
+func checkSingleLink(ctx context.Context, link string, baseURL *url.URL) (isInternal bool, isAccessible bool) {
+	linkURL, err := url.Parse(link)
+	if err != nil {
+		return false, false
+	}
+
+	isInternal = linkURL.Host == "" || linkURL.Host == baseURL.Host
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodHead, link, nil)
+	if err != nil {
+		return isInternal, false
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil || resp.StatusCode >= 400 {
+		return isInternal, false
+	}
+
+	return isInternal, true
 }

@@ -7,13 +7,19 @@ import (
 	"net/http"
 )
 
-func UrlAnalyzerHandler(context *gin.Context) {
-	url := context.Query("url")
+func UrlAnalyzerHandler(ctx *gin.Context) {
+	url := ctx.Query("url")
+	if url == "" {
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": "Missing 'url' query parameter"})
+		return
+	}
+
 	response, err := services.AnalyzePage(url)
 	if err != nil {
-		slog.Error(err.Error())
-		context.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		slog.Error("AnalyzePage error:", err)
+		ctx.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
 	}
-	context.JSON(http.StatusOK, response)
 
+	ctx.JSON(http.StatusOK, response)
 }
