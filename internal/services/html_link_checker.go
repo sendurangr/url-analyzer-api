@@ -1,0 +1,69 @@
+package services
+
+import (
+	"context"
+	"github.com/sendurangr/url-analyzer-api/internal/constants"
+	"github.com/sendurangr/url-analyzer-api/internal/model"
+	"net/http"
+	"net/url"
+	"sync"
+	"time"
+)
+
+func checkLinksConcurrently(links []string, baseURL *url.URL, result *model.AnalyzerResult) {
+	var wg sync.WaitGroup
+	ctx, cancel := context.WithTimeout(context.Background(), constants.TimeoutSeconds*time.Second)
+	defer cancel()
+
+	type linkResult struct {
+		isInternal   bool
+		isAccessible bool
+	}
+
+	resultsChannel := make(chan linkResult, len(links))
+
+	for _, link := range links {
+		wg.Add(1)
+		go func(link string) {
+			defer wg.Done()
+			isInternal, isAccessible := checkSingleLink(ctx, link, baseURL)
+			resultsChannel <- linkResult{isInternal, isAccessible}
+		}(link)
+	}
+
+	wg.Wait()
+	close(resultsChannel)
+
+	for r := range resultsChannel {
+		if r.isInternal {
+			result.InternalLinks++
+		} else {
+			result.ExternalLinks++
+		}
+		if !r.isAccessible {
+			result.InaccessibleLinks++
+		}
+	}
+}
+
+func checkSingleLink(ctx context.Context, link string, baseURL *url.URL) (isInternal bool, isAccessible bool) {
+	linkURL, err := url.Parse(link)
+	if err != nil {
+		return false, false
+	}
+
+	isInternal = linkURL.Host == "" || linkURL.Host == baseURL.Host
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodHead, link, nil)
+
+	if err != nil {
+		return isInternal, false
+	}
+
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil || resp.StatusCode >= 400 {
+		return isInternal, false
+	}
+
+	return isInternal, true
+}
