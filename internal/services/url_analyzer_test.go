@@ -144,7 +144,7 @@ func TestAnalyzePage_InaccessibleLinks(t *testing.T) {
 	if result.ExternalLinks != 2 {
 		t.Errorf("expected 2 external links, got %d", result.ExternalLinks)
 	}
-	if result.InaccessibleLinks != 1 {
-		t.Errorf("expected 1 inaccessible link, got %d", result.InaccessibleLinks)
+	if result.InaccessibleInternalLinks != 1 {
+		t.Errorf("expected 1 inaccessible link, got %d", result.InaccessibleInternalLinks)
 	}
 }

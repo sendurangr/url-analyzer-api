@@ -37,11 +37,14 @@ func checkLinksConcurrently(links []string, baseURL *url.URL, result *model.Anal
 	for r := range resultsChannel {
 		if r.isInternal {
 			result.InternalLinks++
+			if !r.isAccessible {
+				result.InaccessibleInternalLinks++
+			}
 		} else {
 			result.ExternalLinks++
-		}
-		if !r.isAccessible {
-			result.InaccessibleLinks++
+			if !r.isAccessible {
+				result.InaccessibleExternalLinks++
+			}
 		}
 	}
 }

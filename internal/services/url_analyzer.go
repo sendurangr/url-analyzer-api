@@ -12,7 +12,6 @@ import (
 	"time"
 )
 
-// AnalyzerService DI for AnalyzerService
 type AnalyzerService interface {
 	AnalyzePage(url string) (*model.AnalyzerResult, error)
 }

@@ -1,15 +1,16 @@
 package model
 
 type AnalyzerResult struct {
-	HTMLVersion        string   `json:"htmlVersion"`
-	PageTitle          string   `json:"pageTitle"`
-	Headings           Headings `json:"headings"`
-	InternalLinks      int      `json:"internalLinks"`
-	ExternalLinks      int      `json:"externalLinks"`
-	InaccessibleLinks  int      `json:"inaccessibleLinks"`
-	LoginFormDetected  bool     `json:"loginFormDetected"`
-	TimeTakenToAnalyze float32  `json:"timeTakenToAnalyze"`
-	Url                string   `json:"url"`
+	HTMLVersion               string   `json:"htmlVersion"`
+	PageTitle                 string   `json:"pageTitle"`
+	Headings                  Headings `json:"headings"`
+	InternalLinks             int      `json:"internalLinks"`
+	ExternalLinks             int      `json:"externalLinks"`
+	InaccessibleInternalLinks int      `json:"inaccessibleInternalLinks"`
+	InaccessibleExternalLinks int      `json:"inaccessibleExternalLinks"`
+	LoginFormDetected         bool     `json:"loginFormDetected"`
+	TimeTakenToAnalyze        float32  `json:"timeTakenToAnalyze"`
+	Url                       string   `json:"url"`
 }
 
 type Headings struct {
@@ -19,6 +20,4 @@ type Headings struct {
 	H4 int `json:"h4"`
 	H5 int `json:"h5"`
 	H6 int `json:"h6"`
-	H7 int `json:"h7"`
-	H8 int `json:"h8"`
 }
