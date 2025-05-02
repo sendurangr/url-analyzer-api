@@ -6,7 +6,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func SetupRouters(router *gin.RouterGroup) {
+func SetupRouters(router *gin.RouterGroup, analyzerHandler *handler.AnalyzerHandler) {
 	router.GET("/health-check", handler.HealthCheckHandler)
-	router.GET("/url-analyzer", handler.UrlAnalyzerHandler)
+	router.GET("/url-analyzer", analyzerHandler.UrlAnalyzerHandler)
 }

@@ -1,8 +1,10 @@
 package main
 
 import (
+	"github.com/sendurangr/url-analyzer-api/internal/handler"
 	"github.com/sendurangr/url-analyzer-api/internal/middleware"
 	"github.com/sendurangr/url-analyzer-api/internal/routes"
+	"github.com/sendurangr/url-analyzer-api/internal/services"
 	"log/slog"
 	"os"
 
@@ -16,7 +18,10 @@ func main() {
 
 	apiGroup := r.Group("/api/v1")
 
-	routes.SetupRouters(apiGroup)
+	analyzerService := services.NewAnalyzerService()
+	analyzerHandler := handler.NewAnalyzerHandler(analyzerService)
+
+	routes.SetupRouters(apiGroup, analyzerHandler)
 
 	err := r.Run(":8080")
 

@@ -15,11 +15,22 @@ import (
 	"time"
 )
 
+// AnalyzerService DI for AnalyzerService
+type AnalyzerService interface {
+	AnalyzePage(url string) (*model.AnalyzerResult, error)
+}
+
+type analyzerServiceImpl struct{}
+
+func NewAnalyzerService() AnalyzerService {
+	return &analyzerServiceImpl{}
+}
+
 var httpClient = &http.Client{
 	Timeout: constants.TimeoutSeconds * time.Second,
 }
 
-func AnalyzePage(rawURL string) (*model.AnalyzerResult, error) {
+func (a *analyzerServiceImpl) AnalyzePage(rawURL string) (*model.AnalyzerResult, error) {
 	start := time.Now()
 
 	req, err := http.NewRequest("GET", rawURL, nil)
@@ -102,7 +113,7 @@ func iterateThroughDOM(n *html.Node, result *model.AnalyzerResult, baseURL *url.
 			case "a":
 				extractLinksFromElementNode(n, baseURL, &links)
 			case "form":
-				detectLoginForm(n, result)
+				detectLoginFormFromElementNode(n, result)
 			}
 		}
 
@@ -140,7 +151,6 @@ func extractHtmlVersionFromElementNode(n *html.Node, result *model.AnalyzerResul
 			return
 		}
 	}
-
 }
 
 func extractTitleFromElementNode(n *html.Node, result *model.AnalyzerResult) {
@@ -185,11 +195,39 @@ func extractLinksFromElementNode(n *html.Node, baseURL *url.URL, links *[]string
 	}
 }
 
-func detectLoginForm(n *html.Node, result *model.AnalyzerResult) {
-	for _, attr := range n.Attr {
-		if attr.Key == "action" && strings.Contains(strings.ToLower(attr.Val), "login") {
-			result.LoginFormDetected = true
+func detectLoginFormFromElementNode(n *html.Node, result *model.AnalyzerResult) {
+
+	var hasPassword bool
+	var hasUserField bool
+
+	// checking only type inside form node, not other fields like <input name="username"> to support multi-language
+	var checkInputs func(*html.Node)
+	checkInputs = func(n *html.Node) {
+		if n.Type == html.ElementNode && n.Data == "input" {
+			var inputType string
+			for _, attr := range n.Attr {
+
+				if strings.ToLower(attr.Key) == "type" {
+					inputType = strings.ToLower(attr.Val)
+				}
+			}
+			if inputType == "password" {
+				hasPassword = true
+			}
+			if inputType == "text" || inputType == "email" {
+				hasUserField = true
+			}
 		}
+
+		for c := n.FirstChild; c != nil; c = c.NextSibling {
+			checkInputs(c)
+		}
+	}
+
+	checkInputs(n)
+
+	if hasPassword && hasUserField {
+		result.LoginFormDetected = true
 	}
 }
 

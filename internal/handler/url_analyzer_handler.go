@@ -9,7 +9,15 @@ import (
 	"net/url"
 )
 
-func UrlAnalyzerHandler(ctx *gin.Context) {
+type AnalyzerHandler struct {
+	Service services.AnalyzerService
+}
+
+func NewAnalyzerHandler(svc services.AnalyzerService) *AnalyzerHandler {
+	return &AnalyzerHandler{Service: svc}
+}
+
+func (h *AnalyzerHandler) UrlAnalyzerHandler(ctx *gin.Context) {
 	rawURL := ctx.Query("url")
 	if rawURL == "" {
 		utils.RespondWithError(ctx, http.StatusBadRequest, "Missing 'url' query parameter")
@@ -22,7 +30,7 @@ func UrlAnalyzerHandler(ctx *gin.Context) {
 		return
 	}
 
-	response, err := services.AnalyzePage(rawURL)
+	response, err := h.Service.AnalyzePage(rawURL)
 	if err != nil {
 		slog.Error("Failed to analyze page", "url", rawURL, "error", err)
 		utils.RespondWithError(ctx, http.StatusInternalServerError, err.Error())
