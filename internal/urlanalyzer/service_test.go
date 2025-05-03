@@ -8,7 +8,6 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
-	"time"
 )
 
 type analyzeTestCase struct {
@@ -28,7 +27,7 @@ type analyzeTestCase struct {
 }
 
 var httpClient = &http.Client{
-	Timeout: constants.HttpClientTimeout * time.Second,
+	Timeout: constants.HttpClientTimeout,
 }
 
 func startTestServer(htmlContent string) *httptest.Server {
