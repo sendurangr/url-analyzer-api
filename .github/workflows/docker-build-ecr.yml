@@ -19,7 +19,7 @@ jobs:
       - run: go mod download
       - run: go test -v -cover ./...
 
-  build-and-push-deploy:
+  build-and-push-then-deploy:
     name: Build and Push Docker Image to ECR and Deploy to App Runner
     runs-on: ubuntu-latest
     needs: test
