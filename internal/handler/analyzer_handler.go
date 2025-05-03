@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 	"net/url"
+	"strings"
 )
 
 type AnalyzerHandler struct {
@@ -18,6 +19,7 @@ func NewAnalyzerHandler(svc urlanalyzer.AnalyzerService) *AnalyzerHandler {
 }
 
 func (h *AnalyzerHandler) UrlAnalyzerHandler(ctx *gin.Context) {
+
 	rawURL := ctx.Query("url")
 	if rawURL == "" {
 		slog.Warn("Missing 'url' query parameter")
@@ -25,18 +27,25 @@ func (h *AnalyzerHandler) UrlAnalyzerHandler(ctx *gin.Context) {
 		return
 	}
 
+	// Validate the URL format - and not supporting other schemes like ftp or file
 	parsed, err := url.ParseRequestURI(rawURL)
 	if err != nil || (parsed.Scheme != "http" && parsed.Scheme != "https") {
-		utils.RespondWithError(ctx, http.StatusBadRequest, "Invalid or unsupported URL scheme")
+		slog.Warn("Invalid or unsupported URL scheme", "url", rawURL)
+		utils.RespondWithError(ctx, http.StatusBadRequest, "Invalid or unsupported URL. Please use http or https.")
 		return
 	}
 
-	response, err := h.Service.AnalyzePage(rawURL)
+	result, err := h.Service.AnalyzePage(rawURL)
 	if err != nil {
 		slog.Error("Failed to analyze page", "url", rawURL, "error", err)
-		utils.RespondWithError(ctx, http.StatusInternalServerError, err.Error())
+
+		status := http.StatusInternalServerError
+		if strings.Contains(err.Error(), "HTTP error") {
+			status = http.StatusBadGateway
+		}
+		utils.RespondWithError(ctx, status, err.Error())
 		return
 	}
 
-	ctx.JSON(http.StatusOK, response)
+	ctx.JSON(http.StatusOK, result)
 }

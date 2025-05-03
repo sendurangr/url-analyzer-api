@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/gin-gonic/gin"
 	"github.com/sendurangr/url-analyzer-api/internal/constants"
 	"github.com/sendurangr/url-analyzer-api/internal/handler"
 	"github.com/sendurangr/url-analyzer-api/internal/middleware"
@@ -9,9 +10,6 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
-	"time"
-
-	"github.com/gin-gonic/gin"
 )
 
 func main() {
@@ -28,7 +26,7 @@ func run() error {
 	r.GET("/health", handler.HealthCheckHandler)
 
 	httpClient := &http.Client{
-		Timeout: constants.TimeoutSeconds * time.Second,
+		Timeout: constants.HttpClientTimeout,
 	}
 
 	apiGroup := r.Group("/api/v1")

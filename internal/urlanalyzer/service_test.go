@@ -28,7 +28,7 @@ type analyzeTestCase struct {
 }
 
 var httpClient = &http.Client{
-	Timeout: constants.TimeoutSeconds * time.Second,
+	Timeout: constants.HttpClientTimeout * time.Second,
 }
 
 func startTestServer(htmlContent string) *httptest.Server {

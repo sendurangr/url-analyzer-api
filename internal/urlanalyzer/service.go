@@ -1,7 +1,9 @@
 package urlanalyzer
 
 import (
+	"context"
 	"fmt"
+	"github.com/sendurangr/url-analyzer-api/internal/constants"
 	"github.com/sendurangr/url-analyzer-api/internal/model"
 	"github.com/sendurangr/url-analyzer-api/internal/utils"
 	"golang.org/x/net/html"
@@ -27,39 +29,42 @@ func NewAnalyzerService(client *http.Client) AnalyzerService {
 func (a *analyzerServiceImpl) AnalyzePage(rawURL string) (*model.AnalyzerResult, error) {
 	start := time.Now()
 
-	req, err := http.NewRequest("GET", rawURL, nil)
+	ctx, cancel := context.WithTimeout(context.Background(), constants.ContextTimeout)
+	defer cancel()
+
+	req, err := http.NewRequestWithContext(ctx, "GET", rawURL, nil)
 	if err != nil {
-		return nil, fmt.Errorf("creating request: %w", err)
+		return nil, fmt.Errorf("creating HTTP request: %w", err)
 	}
 
 	utils.SetHeaders(req)
 
 	resp, err := a.client.Do(req)
-
 	if err != nil {
 		slog.Error("HTTP request failed", "url", rawURL, "error", err)
-		return nil, fmt.Errorf("performing request: %w", err)
+		return nil, fmt.Errorf("failed to perform request: %w", err)
 	}
 	defer func() {
 		if err := resp.Body.Close(); err != nil {
-			slog.Error("failed to close response body", "error", err)
+			slog.Error("Failed to close response body", "error", err)
 		}
 	}()
 
 	if resp.StatusCode >= 400 {
-		slog.Warn("non-OK HTTP response", "status", resp.StatusCode, "url", rawURL)
-		return nil, fmt.Errorf("HTTP error %d: %s", resp.StatusCode, http.StatusText(resp.StatusCode))
+		slog.Warn("Non-OK HTTP response", "url", rawURL, "status", resp.StatusCode)
+		return nil, fmt.Errorf("HTTP error %d: %s — the URL is unreachable or returned an error",
+			resp.StatusCode, http.StatusText(resp.StatusCode))
 	}
 
 	parsedURL, err := url.Parse(rawURL)
 	if err != nil {
-		return nil, fmt.Errorf("parsing URL: %w", err)
+		return nil, fmt.Errorf("failed to parse URL: %w", err)
 	}
 
 	doc, err := html.Parse(resp.Body)
 	if err != nil {
-		slog.Error("HTML parse failed", "url", rawURL, "error", err)
-		return nil, fmt.Errorf("parsing HTML: %w", err)
+		slog.Error("Failed to parse HTML", "url", rawURL, "error", err)
+		return nil, fmt.Errorf("failed to parse the HTML document: %w", err)
 	}
 
 	result := &model.AnalyzerResult{}

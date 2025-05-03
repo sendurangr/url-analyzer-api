@@ -59,7 +59,6 @@ func detectLoginFormFromElementNode(n *html.Node, result *model.AnalyzerResult) 
 	var hasPassword bool
 	var hasUserField bool
 
-	// checking only type inside form node, not other fields like <input name="username"> to support multi-language
 	var checkInputs func(*html.Node)
 	checkInputs = func(n *html.Node) {
 

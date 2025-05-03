@@ -2,6 +2,8 @@ package utils
 
 import "github.com/gin-gonic/gin"
 
-func RespondWithError(ctx *gin.Context, status int, msg string) {
-	ctx.JSON(status, gin.H{"message": msg})
+func RespondWithError(ctx *gin.Context, statusCode int, message string) {
+	ctx.JSON(statusCode, gin.H{
+		"message": message,
+	})
 }

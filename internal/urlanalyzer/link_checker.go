@@ -9,12 +9,11 @@ import (
 	"net/http"
 	"net/url"
 	"sync"
-	"time"
 )
 
 func (a *analyzerServiceImpl) checkLinksConcurrently(links []string, baseURL *url.URL, result *model.AnalyzerResult) {
 	var wg sync.WaitGroup
-	ctx, cancel := context.WithTimeout(context.Background(), constants.TimeoutSeconds*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), constants.ContextTimeout)
 	defer cancel()
 
 	type linkResult struct {
