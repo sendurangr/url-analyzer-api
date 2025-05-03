@@ -1,16 +1,19 @@
 # URL Analyzer - Backend
 
 <!-- TOC -->
+
 * [URL Analyzer - Backend](#url-analyzer---backend)
-  * [💻 Local Setup Guide](#-local-setup-guide)
-    * [Prerequisites](#prerequisites)
-    * [Installation](#installation)
-  * [🤙 API Documentation](#-api-documentation)
-  * [🪐 Deployment](#-deployment)
-    * [✅ CI/CD](#-cicd)
-  * [🔅 Linked Repositories](#-linked-repositories)
+    * [💻 Local Setup Guide](#-local-setup-guide)
+        * [Prerequisites](#prerequisites)
+        * [Installation](#installation)
+    * [🤙 API Documentation](#-api-documentation)
+    * [🪐 Deployment](#-deployment)
+        * [✅ CI/CD](#-cicd)
+    * [🔅 Linked Repositories](#-linked-repositories)
 * [Technical Explanations & Validations](#technical-explanations--validations)
-  * [Dependencies Used](#dependencies-used)
+    * [🚀 Dependencies Used](#-dependencies-used)
+    * [🧪 Testing](#-testing)
+
 <!-- TOC -->
 
 ## 💻 Local Setup Guide
@@ -77,12 +80,44 @@ curl --request GET \
 | Deployment Infrastructure - AWS | https://github.com/sendurangr/url-analyzer-infrastructure <br> (Provisioning through Terraform) |
 | Frontend - Angular              | https://github.com/sendurangr/url-analyzer-client                                               |
 
-
 # Technical Explanations & Validations
 
 ## 🚀 Dependencies Used
+
 - `github.com/gin-gonic/gin`
 - `github.com/gin-contrib/cors`
 - `golang.org/x/net`
 
-## 🧪 Testing
+## 🧪 Testing [Also in CI/CD]
+
+⚠️ I have not used any external testing libraries like `testify` or `ginkgo` for testing. <br>
+I have used the built-in `testing` package for unit and integration tests. <br>
+Reasons: built-in testing package is simple and was easy to use for this project. <br>
+
+### Unit Tests
+
+- The project is tested using `go test ./... -cover` command.
+- expected output
+
+```bash
+PS C:\dev\personal\lucytech\url-analyzer-api> go test ./... -cover
+        github.com/sendurangr/url-analyzer-api/cmd/server               coverage: 0.0% of statements
+ok      github.com/sendurangr/url-analyzer-api/integrationtest  2.311s  coverage: [no statements]
+?       github.com/sendurangr/url-analyzer-api/internal/constants       [no test files]
+ok      github.com/sendurangr/url-analyzer-api/internal/handler 0.770s  coverage: 88.2% of statements
+        github.com/sendurangr/url-analyzer-api/internal/middleware              coverage: 0.0% of statements
+?       github.com/sendurangr/url-analyzer-api/internal/model   [no test files]
+        github.com/sendurangr/url-analyzer-api/internal/routes          coverage: 0.0% of statements
+ok      github.com/sendurangr/url-analyzer-api/internal/urlanalyzer     1.912s  coverage: 89.8% of statements
+        github.com/sendurangr/url-analyzer-api/internal/utils           coverage: 0.0% of statements
+
+```
+
+### Integration Tests
+
+- The integration tests are located in the `integrationtest` package.
+- The tests are run using the `go test ./...` command.
+
+## Assumptions
+
+- the webpage's html tags are not malformed or broken.

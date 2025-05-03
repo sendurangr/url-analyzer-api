@@ -62,7 +62,7 @@ func TestUrlAnalyzer_MockSite(t *testing.T) {
 		t.Fatalf("Failed to decode JSON response: %v", err)
 	}
 
-	// Step 5: Validate result
+	// Validate result fields
 	if result.PageTitle != "Test Page" {
 		t.Errorf("Expected title 'Test Page', got '%s'", result.PageTitle)
 	}
