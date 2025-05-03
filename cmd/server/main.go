@@ -22,6 +22,8 @@ func run() error {
 	r := gin.Default()
 	r.Use(middleware.Cors())
 
+	r.GET("/health", handler.HealthCheckHandler)
+
 	apiGroup := r.Group("/api/v1")
 	analyzerHandler := handler.NewAnalyzerHandler(urlanalyzer.NewAnalyzerService())
 	routes.SetupRouters(apiGroup, analyzerHandler)

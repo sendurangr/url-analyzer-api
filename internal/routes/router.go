@@ -7,6 +7,5 @@ import (
 )
 
 func SetupRouters(router *gin.RouterGroup, analyzerHandler *handler.AnalyzerHandler) {
-	router.GET("/health-check", handler.HealthCheckHandler)
 	router.GET("/url-analyzer", analyzerHandler.UrlAnalyzerHandler)
 }
