@@ -1,12 +1,15 @@
 package main
 
 import (
+	"github.com/sendurangr/url-analyzer-api/internal/constants"
 	"github.com/sendurangr/url-analyzer-api/internal/handler"
 	"github.com/sendurangr/url-analyzer-api/internal/middleware"
 	"github.com/sendurangr/url-analyzer-api/internal/routes"
 	"github.com/sendurangr/url-analyzer-api/internal/urlanalyzer"
 	"log/slog"
+	"net/http"
 	"os"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -24,8 +27,12 @@ func run() error {
 
 	r.GET("/health", handler.HealthCheckHandler)
 
+	httpClient := &http.Client{
+		Timeout: constants.TimeoutSeconds * time.Second,
+	}
+
 	apiGroup := r.Group("/api/v1")
-	analyzerHandler := handler.NewAnalyzerHandler(urlanalyzer.NewAnalyzerService())
+	analyzerHandler := handler.NewAnalyzerHandler(urlanalyzer.NewAnalyzerService(httpClient))
 	routes.SetupRouters(apiGroup, analyzerHandler)
 
 	port := os.Getenv("PORT")

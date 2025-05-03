@@ -2,7 +2,6 @@ package urlanalyzer
 
 import (
 	"fmt"
-	"github.com/sendurangr/url-analyzer-api/internal/constants"
 	"github.com/sendurangr/url-analyzer-api/internal/model"
 	"golang.org/x/net/html"
 	"log/slog"
@@ -16,14 +15,12 @@ type AnalyzerService interface {
 	AnalyzePage(url string) (*model.AnalyzerResult, error)
 }
 
-type analyzerServiceImpl struct{}
-
-func NewAnalyzerService() AnalyzerService {
-	return &analyzerServiceImpl{}
+type analyzerServiceImpl struct {
+	client *http.Client
 }
 
-var httpClient = &http.Client{
-	Timeout: constants.TimeoutSeconds * time.Second,
+func NewAnalyzerService(client *http.Client) AnalyzerService {
+	return &analyzerServiceImpl{client: client}
 }
 
 func (a *analyzerServiceImpl) AnalyzePage(rawURL string) (*model.AnalyzerResult, error) {
@@ -36,7 +33,8 @@ func (a *analyzerServiceImpl) AnalyzePage(rawURL string) (*model.AnalyzerResult,
 
 	setHeaders(req)
 
-	resp, err := httpClient.Do(req)
+	resp, err := a.client.Do(req)
+
 	if err != nil {
 		slog.Error("HTTP request failed", "url", rawURL, "error", err)
 		return nil, fmt.Errorf("performing request: %w", err)
@@ -64,7 +62,7 @@ func (a *analyzerServiceImpl) AnalyzePage(rawURL string) (*model.AnalyzerResult,
 	}
 
 	result := &model.AnalyzerResult{}
-	iterateThroughDOM(doc, result, parsedURL)
+	a.iterateThroughDOM(doc, result, parsedURL)
 	result.TimeTakenToAnalyze = float32(time.Since(start).Seconds())
 	result.Url = rawURL
 
@@ -87,7 +85,7 @@ func setHeaders(req *http.Request) {
 	req.Header.Set("Connection", "keep-alive")
 }
 
-func iterateThroughDOM(n *html.Node, result *model.AnalyzerResult, baseURL *url.URL) {
+func (a *analyzerServiceImpl) iterateThroughDOM(n *html.Node, result *model.AnalyzerResult, baseURL *url.URL) {
 	var links []string
 
 	var collectLinks func(*html.Node)
@@ -120,5 +118,5 @@ func iterateThroughDOM(n *html.Node, result *model.AnalyzerResult, baseURL *url.
 
 	collectLinks(n)
 
-	checkLinksConcurrently(links, baseURL, result)
+	a.checkLinksConcurrently(links, baseURL, result)
 }

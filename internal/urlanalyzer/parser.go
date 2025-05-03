@@ -8,10 +8,6 @@ import (
 )
 
 func extractHtmlVersionFromDoctypeNode(n *html.Node, result *model.AnalyzerResult) {
-	if result.HTMLVersion != "" {
-		return
-	}
-
 	if strings.EqualFold(n.Data, "html") {
 		result.HTMLVersion = "HTML5"
 	} else {
@@ -21,6 +17,7 @@ func extractHtmlVersionFromDoctypeNode(n *html.Node, result *model.AnalyzerResul
 
 func extractHtmlVersionFromElementNode(n *html.Node, result *model.AnalyzerResult) {
 
+	// already set by doctype node
 	if result.HTMLVersion != "" {
 		return
 	}
@@ -31,6 +28,8 @@ func extractHtmlVersionFromElementNode(n *html.Node, result *model.AnalyzerResul
 			return
 		}
 	}
+
+	result.HTMLVersion = "Older HTML or XHTML"
 }
 
 func extractTitleFromElementNode(n *html.Node, result *model.AnalyzerResult) {

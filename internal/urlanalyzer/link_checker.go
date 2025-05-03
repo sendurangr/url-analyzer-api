@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-func checkLinksConcurrently(links []string, baseURL *url.URL, result *model.AnalyzerResult) {
+func (a *analyzerServiceImpl) checkLinksConcurrently(links []string, baseURL *url.URL, result *model.AnalyzerResult) {
 	var wg sync.WaitGroup
 	ctx, cancel := context.WithTimeout(context.Background(), constants.TimeoutSeconds*time.Second)
 	defer cancel()
@@ -34,7 +34,7 @@ func checkLinksConcurrently(links []string, baseURL *url.URL, result *model.Anal
 			sem <- struct{}{}
 			defer func() { <-sem }()
 
-			isInternal, isAccessible := checkSingleLink(ctx, link, baseURL)
+			isInternal, isAccessible := a.checkSingleLink(ctx, link, baseURL)
 			resultsChan <- linkResult{isInternal, isAccessible}
 		}(link)
 	}
@@ -57,7 +57,7 @@ func checkLinksConcurrently(links []string, baseURL *url.URL, result *model.Anal
 	}
 }
 
-func checkSingleLink(ctx context.Context, link string, baseURL *url.URL) (isInternal bool, isAccessible bool) {
+func (a *analyzerServiceImpl) checkSingleLink(ctx context.Context, link string, baseURL *url.URL) (isInternal bool, isAccessible bool) {
 	linkURL, err := url.Parse(link)
 	if err != nil {
 		return false, false
@@ -71,7 +71,8 @@ func checkSingleLink(ctx context.Context, link string, baseURL *url.URL) (isInte
 		return isInternal, false
 	}
 
-	resp, err := http.DefaultClient.Do(req)
+	resp, err := a.client.Do(req)
+
 	if err != nil || resp.StatusCode >= 400 {
 		return isInternal, false
 	}

@@ -38,7 +38,7 @@
    ```
 
 4. The server will start on `localhost:8080` by default.
-   Health Check endpoint is available at `http://localhost:8080/api/v1/health-check`
+   Health Check endpoint is available at `http://localhost:8080/health`
 
 ---
 
@@ -80,7 +80,9 @@ curl --request GET \
 
 # Technical Explanations & Validations
 
-## Dependencies Used
-- `github.com/gin-contrib/cors`
+## 🚀 Dependencies Used
 - `github.com/gin-gonic/gin`
+- `github.com/gin-contrib/cors`
 - `golang.org/x/net`
+
+## 🧪 Testing

@@ -2,11 +2,13 @@ package urlanalyzer
 
 import (
 	"fmt"
+	"github.com/sendurangr/url-analyzer-api/internal/constants"
 	"github.com/sendurangr/url-analyzer-api/internal/model"
 	"net/http"
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 )
 
 type analyzeTestCase struct {
@@ -17,8 +19,16 @@ type analyzeTestCase struct {
 	wantLogin       bool
 	wantH1Count     int
 	wantH2Count     int
+	wantH3Count     int
+	wantH4Count     int
+	wantH5Count     int
+	wantH6Count     int
 	wantInternal    int
 	wantExternal    int
+}
+
+var httpClient = &http.Client{
+	Timeout: constants.TimeoutSeconds * time.Second,
 }
 
 func startTestServer(htmlContent string) *httptest.Server {
@@ -44,10 +54,10 @@ func simulateSuccessAndFailServer() *httptest.Server {
 func TestAnalyzePage_TableDrivenTestCases(t *testing.T) {
 	tests := []analyzeTestCase{
 		{
-			name: "HTML with login and all elements",
+			name: "HTML 1",
 			htmlContent: `
 				<!DOCTYPE html>
-				<html><head><title>Login Page</title></head>
+				<html><head><title>First Html</title></head>
 				<body>
 					<h1>Welcome</h1>
 					<h2>Subheading</h2>
@@ -57,10 +67,38 @@ func TestAnalyzePage_TableDrivenTestCases(t *testing.T) {
 				</body></html>
 			`,
 			wantHtmlVersion: "HTML5",
-			wantTitle:       "Login Page",
+			wantTitle:       "First Html",
 			wantLogin:       false,
 			wantH1Count:     1,
 			wantH2Count:     1,
+			wantInternal:    1,
+			wantExternal:    1,
+		},
+		{
+			name: "HTML 2",
+			htmlContent: `
+				<html><head><title>Login Page</title></head>
+				<body>
+					<h3>Welcome</h3>
+					<h4>Subheading</h4>
+					<h5>Subheading</h5>
+					<h6>Subheading</h6>
+					<a href="/home">Internal</a>
+					<a href="https://google.com">External</a>
+					<a type="text/html">skippable</a>
+					<a href="#">skippable</a>
+					<form> 	<input type="email"/> 
+							<input type="password"/></form>
+				</body>
+				</html>
+			`,
+			wantHtmlVersion: "Older HTML or XHTML",
+			wantTitle:       "Login Page",
+			wantLogin:       true,
+			wantH3Count:     1,
+			wantH4Count:     1,
+			wantH5Count:     1,
+			wantH6Count:     1,
 			wantInternal:    1,
 			wantExternal:    1,
 		},
@@ -75,9 +113,14 @@ func TestAnalyzePage_TableDrivenTestCases(t *testing.T) {
 			wantInternal:    0,
 			wantExternal:    0,
 		},
+		{
+			name:            "Test Html",
+			htmlContent:     `<html lang="en"><body>No content</body></html>`,
+			wantHtmlVersion: "HTML5",
+		},
 	}
 
-	service := NewAnalyzerService()
+	service := NewAnalyzerService(httpClient)
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
@@ -134,7 +177,7 @@ func TestAnalyzePage_InaccessibleLinks(t *testing.T) {
 	ts := startTestServer(html)
 	defer ts.Close()
 
-	service := NewAnalyzerService()
+	service := NewAnalyzerService(httpClient)
 
 	result, err := service.AnalyzePage(ts.URL)
 	if err != nil {
@@ -144,7 +187,37 @@ func TestAnalyzePage_InaccessibleLinks(t *testing.T) {
 	if result.ExternalLinks != 2 {
 		t.Errorf("expected 2 external links, got %d", result.ExternalLinks)
 	}
-	if result.InaccessibleInternalLinks != 1 {
+	if result.InaccessibleExternalLinks != 1 {
 		t.Errorf("expected 1 inaccessible link, got %d", result.InaccessibleInternalLinks)
+	}
+}
+
+func TestAnalyzePage_ErrorHandling(t *testing.T) {
+	tests := []struct {
+		name       string
+		handler    http.HandlerFunc
+		wantErrMsg string
+	}{
+		{
+			name: "HTTP error status",
+			handler: func(w http.ResponseWriter, r *http.Request) {
+				http.Error(w, "Forbidden", http.StatusForbidden)
+			},
+			wantErrMsg: "HTTP error 403",
+		},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			ts := httptest.NewServer(tc.handler)
+			defer ts.Close()
+
+			service := NewAnalyzerService(httpClient)
+
+			_, err := service.AnalyzePage(ts.URL)
+			if err == nil || !strings.Contains(err.Error(), tc.wantErrMsg) {
+				t.Fatalf("expected error containing %q, got %v", tc.wantErrMsg, err)
+			}
+		})
 	}
 }
