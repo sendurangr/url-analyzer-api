@@ -1,19 +1,24 @@
 # URL Analyzer - Backend
 
 <!-- TOC -->
-
 * [URL Analyzer - Backend](#url-analyzer---backend)
-    * [💻 Local Setup Guide](#-local-setup-guide)
-        * [Prerequisites](#prerequisites)
-        * [Installation](#installation)
-    * [🤙 API Documentation](#-api-documentation)
-    * [🪐 Deployment](#-deployment)
-        * [✅ CI/CD](#-cicd)
-    * [🔅 Linked Repositories](#-linked-repositories)
+  * [💻 Local Setup Guide](#-local-setup-guide)
+    * [Prerequisites](#prerequisites)
+    * [Installation](#installation)
+  * [🤙 API Documentation](#-api-documentation)
+  * [🪐 Deployment](#-deployment)
+    * [✅ CI/CD](#-cicd)
+  * [🔅 Linked Repositories - (Frontend, Infrastructure)](#-linked-repositories---frontend-infrastructure)
 * [Technical Explanations & Validations](#technical-explanations--validations)
-    * [🚀 Dependencies Used](#-dependencies-used)
-    * [🧪 Testing](#-testing)
-
+  * [🚀 Dependencies Used](#-dependencies-used)
+  * [🧪 Testing [Also in CI/CD]](#-testing-also-in-cicd)
+    * [Unit Tests](#unit-tests)
+    * [Integration Tests](#integration-tests)
+  * [⛔ Do we really need Prometheus in this application? No. Why?](#-do-we-really-need-prometheus-in-this-application-no-why)
+  * [⛔ Do we need Rate Limiting in this application? No (under specific assumptions)](#-do-we-need-rate-limiting-in-this-application-no-under-specific-assumptions)
+  * [✏️ Logging with `slog`](#-logging-with-slog)
+  * [❓ Why I have not deployed to AWS Lambda?](#-why-i-have-not-deployed-to-aws-lambda)
+  * [💫 Suggestions on possible improvements of the application](#-suggestions-on-possible-improvements-of-the-application)
 <!-- TOC -->
 
 ## 💻 Local Setup Guide
@@ -58,10 +63,10 @@ curl --request GET \
 
 ## 🪐 Deployment
 
-| Services | Endpoints                                                          |
-|----------|--------------------------------------------------------------------|
-| Frontend | https://d2tiqwdij4sc1n.cloudfront.net                              |
-| Backend  | https://8pmmtnd3yw.ap-south-1.awsapprunner.com/api/v1/health-check |
+| Services | Endpoints                                             |
+|----------|-------------------------------------------------------|
+| Frontend | https://d2tiqwdij4sc1n.cloudfront.net                 |
+| Backend  | https://8pmmtnd3yw.ap-south-1.awsapprunner.com/health |
 
 ![Infrastructure Diagram](./docs/assets/diagram.svg)
 
@@ -72,13 +77,13 @@ curl --request GET \
 - The pipeline builds the Docker image and deploys it to AWS App Runner through <br>
   `GitHub Actions -> AWS ECR -> AWS App Runner`.
 
-## 🔅 Linked Repositories
+## 🔅 Linked Repositories - (Frontend, Infrastructure)
 
-| Services                        | Repositories                                                                                    |
-|---------------------------------|-------------------------------------------------------------------------------------------------|
-| Backend - Golang                | https://github.com/sendurangr/url-analyzer-api    (Current)                                     |
-| Deployment Infrastructure - AWS | https://github.com/sendurangr/url-analyzer-infrastructure <br> (Provisioning through Terraform) |
-| Frontend - Angular              | https://github.com/sendurangr/url-analyzer-client                                               |
+| Services                           | Repositories                                                                                    |
+|------------------------------------|-------------------------------------------------------------------------------------------------|
+| 🔗 Backend - Golang                | https://github.com/sendurangr/url-analyzer-api    (Current)                                     |
+| 🔗 Deployment Infrastructure - AWS | https://github.com/sendurangr/url-analyzer-infrastructure <br> (Provisioning through Terraform) |
+| 🔗 Frontend - Angular              | https://github.com/sendurangr/url-analyzer-client                                               |
 
 # Technical Explanations & Validations
 
@@ -118,6 +123,45 @@ ok      github.com/sendurangr/url-analyzer-api/internal/urlanalyzer     1.912s  
 - The integration tests are located in the `integrationtest` package.
 - The tests are run using the `go test ./...` command.
 
-## Assumptions
+## ⛔ Do we really need Prometheus in this application? No. Why?
 
-- the webpage's html tags are not malformed or broken.
+- The application is deployed in AWS App Runner, which integrates directly with **Amazon CloudWatch** for built-in
+  metrics, logs, and alarms.
+- App Runner **automatically scales** instances up/down based on traffic, and these instances are **ephemeral and
+  managed** — we don’t get fixed IPs or persistent infrastructure.
+- Since we don't have access to individual instance details (like static IPs or ports), setting up **Prometheus node
+  exporters or service discovery** is not straightforward.
+- Using **Prometheus** in this case adds unnecessary complexity when **CloudWatch provides sufficient observability**
+  for most use cases (e.g., CPU, memory, request count, error rates).
+
+## ⛔ Do we need Rate Limiting in this application? No (under specific assumptions)
+
+- The application is deployed in AWS App Runner, which automatically scales based on CPU and memory thresholds.
+- App Runner will spin up instances and balance load accordingly.
+- ❗ However, if we need to protect against abusive clients, reduce cost, or safeguard downstream systems,
+  then implementing rate limiting at the application level or using AWS WAF or API Gateway is recommended.
+
+## ✏️ Logging with `slog`
+
+- The application uses the `slog` package from the Go standard library for structured logging.
+- `slog` is preferred over third-party libraries like `logrus` because:
+    - It is **officially supported** and part of the standard library (from Go 1.21).
+    - It offers **structured logging** with support for **JSON output**, levels, and attributes.
+    - It generally provides **better performance** and **integration** compared to older logging libraries like
+      `logrus`.
+
+## ❓ Why I have not deployed to AWS Lambda?
+- AWS Lambda **can be a good fit** for this kind of lightweight, stateless application, But it comes with additional setup complexity when testing locally.
+- For effective local testing, you'd need to configure tools like **AWS SAM**, **LocalStack**, or Docker-based emulation.
+- Otherwise, lambda is a good fit for this application.
+
+## 💫 Suggestions on possible improvements of the application
+
+- **Rate Limiting with AWS WAF**
+    - Add AWS WAF in front of App Runner using CloudFront or API Gateway.
+    - Apply **rate-based rules** to block abusive or excessive requests without needing app-level logic.
+
+- **History of URLs with Authenticated Users**
+    - Store the history of URLs analyzed by users.
+    - Provide a feature to view previously analyzed URLs.
+    - Using MongoDB or DynamoDB for storing the history.
