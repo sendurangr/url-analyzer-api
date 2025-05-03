@@ -18,6 +18,7 @@
   * [⛔ Do we need Rate Limiting in this application? No (under specific assumptions)](#-do-we-need-rate-limiting-in-this-application-no-under-specific-assumptions)
   * [✏️ Logging with `slog`](#-logging-with-slog)
   * [❓ Why I have not deployed to AWS Lambda?](#-why-i-have-not-deployed-to-aws-lambda)
+  * [🤯 Challenges faced and the approaches took to overcome](#-challenges-faced-and-the-approaches-took-to-overcome)
   * [💫 Suggestions on possible improvements of the application](#-suggestions-on-possible-improvements-of-the-application)
 <!-- TOC -->
 
@@ -151,9 +152,45 @@ ok      github.com/sendurangr/url-analyzer-api/internal/urlanalyzer     1.912s  
       `logrus`.
 
 ## ❓ Why I have not deployed to AWS Lambda?
-- AWS Lambda **can be a good fit** for this kind of lightweight, stateless application, But it comes with additional setup complexity when testing locally.
-- For effective local testing, you'd need to configure tools like **AWS SAM**, **LocalStack**, or Docker-based emulation.
+
+- AWS Lambda **can be a good fit** for this kind of lightweight, stateless application, But it comes with additional
+  setup complexity when testing locally.
+- For effective local testing, you'd need to configure tools like **AWS SAM**, **LocalStack**, or Docker-based
+  emulation.
 - Otherwise, lambda is a good fit for this application.
+
+## 🤯 Challenges faced and the approaches took to overcome
+
+- **Don't know Golang** - This is the first time I am doing Golang. Therefore, I had to learn the language and its
+  idioms
+  before doing this project.
+- **Goroutines, Channels, Context** - I had to learn how to use goroutines, channels, and context in Golang.
+  <br> I used goroutines to make the URL analysis concurrent and channels to communicate between the goroutines. I used
+  context to manage the lifecycle of the goroutines and to cancel them if needed.
+- **Go Testing Best Practices**
+    - Table driven tests: I used table-driven tests to test the URL analysis function with different inputs and expected
+      outputs. Used Ref : https://go.dev/wiki/TableDrivenTests
+    - Followed : Don't test private methods or internal structures unless absolutely necessary. Test the exported
+      behavior.
+- **Controlling Goroutine Concurrency per request by semaphore**: I used a semaphore to limit the number of concurrent
+  goroutines per request. This is important to avoid overwhelming the system with too many concurrent requests.
+  <br> I used a buffered channel to implement the semaphore. set the value to `64` per request.
+- **Speed up dom traversal by checking through switch case** :
+  I used switch case to check the type of the node and perform the analysis accordingly. This is faster than using
+  if-else statements. switch uses the hash table lookup to find the case that matches the value.
+  `n.DataAtom` is an integer value, so it is faster compare than string comparison of using `a.Data`.
+    ```bash
+    if n.Type == html.ElementNode {
+        switch n.DataAtom {
+            case atom.Html:
+              extractHtmlVersionFromElementNode(n, result)
+            case atom.Title:
+              extractTitleFromElementNode(n, result)
+            ...
+        }
+    }
+    
+    ```
 
 ## 💫 Suggestions on possible improvements of the application
 
