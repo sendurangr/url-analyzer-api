@@ -3,9 +3,10 @@ package urlanalyzer
 import (
 	"fmt"
 	"github.com/sendurangr/url-analyzer-api/internal/model"
+	"github.com/sendurangr/url-analyzer-api/internal/utils"
 	"golang.org/x/net/html"
+	"golang.org/x/net/html/atom"
 	"log/slog"
-	"math/rand"
 	"net/http"
 	"net/url"
 	"time"
@@ -31,7 +32,7 @@ func (a *analyzerServiceImpl) AnalyzePage(rawURL string) (*model.AnalyzerResult,
 		return nil, fmt.Errorf("creating request: %w", err)
 	}
 
-	setHeaders(req)
+	utils.SetHeaders(req)
 
 	resp, err := a.client.Do(req)
 
@@ -69,22 +70,6 @@ func (a *analyzerServiceImpl) AnalyzePage(rawURL string) (*model.AnalyzerResult,
 	return result, nil
 }
 
-func randomUserAgent() string {
-	agents := []string{
-		"Mozilla/5.0 (Windows NT 10.0; Win64; x64)",
-		"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)",
-		"Mozilla/5.0 (X11; Linux x86_64)",
-	}
-	return agents[rand.Intn(len(agents))]
-}
-
-func setHeaders(req *http.Request) {
-	req.Header.Set("User-Agent", randomUserAgent())
-	req.Header.Set("Accept", "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8")
-	req.Header.Set("Accept-Language", "en-US,en;q=0.5")
-	req.Header.Set("Connection", "keep-alive")
-}
-
 func (a *analyzerServiceImpl) iterateThroughDOM(n *html.Node, result *model.AnalyzerResult, baseURL *url.URL) {
 	var links []string
 
@@ -96,18 +81,28 @@ func (a *analyzerServiceImpl) iterateThroughDOM(n *html.Node, result *model.Anal
 		}
 
 		if n.Type == html.ElementNode {
-			switch n.Data {
-			case "html":
-				// when html.DoctypeNode is not present
+			switch n.DataAtom {
+			case atom.Html:
+				// when html.DoctypeNode is not present in the html doc
 				extractHtmlVersionFromElementNode(n, result)
-			case "title":
+			case atom.Title:
 				extractTitleFromElementNode(n, result)
-			case "h1", "h2", "h3", "h4", "h5", "h6":
-				countHtmlTags(n, result)
-			case "a":
+			case atom.A:
 				extractLinksFromElementNode(n, baseURL, &links)
-			case "form":
+			case atom.Form:
 				detectLoginFormFromElementNode(n, result)
+			case atom.H1:
+				result.Headings.H1++
+			case atom.H2:
+				result.Headings.H2++
+			case atom.H3:
+				result.Headings.H3++
+			case atom.H4:
+				result.Headings.H4++
+			case atom.H5:
+				result.Headings.H5++
+			case atom.H6:
+				result.Headings.H6++
 			}
 		}
 

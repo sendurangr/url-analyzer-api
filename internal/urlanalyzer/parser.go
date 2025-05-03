@@ -1,17 +1,20 @@
 package urlanalyzer
 
 import (
+	"github.com/sendurangr/url-analyzer-api/internal/constants"
 	"github.com/sendurangr/url-analyzer-api/internal/model"
 	"golang.org/x/net/html"
+	"golang.org/x/net/html/atom"
 	"net/url"
 	"strings"
 )
 
 func extractHtmlVersionFromDoctypeNode(n *html.Node, result *model.AnalyzerResult) {
-	if strings.EqualFold(n.Data, "html") {
-		result.HTMLVersion = "HTML5"
+
+	if n.DataAtom == atom.Html || strings.EqualFold(n.Data, "html") {
+		result.HTMLVersion = constants.HTML5Version
 	} else {
-		result.HTMLVersion = "Older HTML or XHTML"
+		result.HTMLVersion = constants.LegacyHTMLVersion
 	}
 }
 
@@ -24,12 +27,12 @@ func extractHtmlVersionFromElementNode(n *html.Node, result *model.AnalyzerResul
 
 	for _, attr := range n.Attr {
 		if attr.Key == "lang" {
-			result.HTMLVersion = "HTML5"
+			result.HTMLVersion = constants.HTML5Version
 			return
 		}
 	}
 
-	result.HTMLVersion = "Older HTML or XHTML"
+	result.HTMLVersion = constants.LegacyHTMLVersion
 }
 
 func extractTitleFromElementNode(n *html.Node, result *model.AnalyzerResult) {
@@ -38,36 +41,13 @@ func extractTitleFromElementNode(n *html.Node, result *model.AnalyzerResult) {
 	}
 }
 
-func countHtmlTags(n *html.Node, result *model.AnalyzerResult) {
-	switch n.Data {
-	case "h1":
-		result.Headings.H1++
-	case "h2":
-		result.Headings.H2++
-	case "h3":
-		result.Headings.H3++
-	case "h4":
-		result.Headings.H4++
-	case "h5":
-		result.Headings.H5++
-	case "h6":
-		result.Headings.H6++
-	}
-}
-
 func extractLinksFromElementNode(n *html.Node, baseURL *url.URL, links *[]string) {
 	for _, attr := range n.Attr {
-		if attr.Key != "href" {
+		if attr.Key != "href" || attr.Val == "" || strings.HasPrefix(attr.Val, "#") {
 			continue
 		}
 
-		if strings.HasPrefix(attr.Val, "#") || attr.Val == "" {
-			continue
-		}
-
-		linkURL, err := url.Parse(attr.Val)
-
-		if err == nil {
+		if linkURL, err := url.Parse(attr.Val); err == nil {
 			absURL := baseURL.ResolveReference(linkURL)
 			*links = append(*links, absURL.String())
 		}
@@ -82,18 +62,25 @@ func detectLoginFormFromElementNode(n *html.Node, result *model.AnalyzerResult) 
 	// checking only type inside form node, not other fields like <input name="username"> to support multi-language
 	var checkInputs func(*html.Node)
 	checkInputs = func(n *html.Node) {
-		if n.Type == html.ElementNode && n.Data == "input" {
+
+		// early exit when both fields are found - no need to traverse further
+		if hasPassword && hasUserField {
+			return
+		}
+
+		if n.Type == html.ElementNode && n.DataAtom == atom.Input {
 			var inputType string
 			for _, attr := range n.Attr {
-
-				if strings.ToLower(attr.Key) == "type" {
+				if attr.Key == "type" {
 					inputType = strings.ToLower(attr.Val)
+					break
 				}
 			}
-			if inputType == "password" {
+
+			switch inputType {
+			case "password":
 				hasPassword = true
-			}
-			if inputType == "text" || inputType == "email" {
+			case "text", "email":
 				hasUserField = true
 			}
 		}

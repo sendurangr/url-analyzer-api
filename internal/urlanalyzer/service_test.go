@@ -152,6 +152,18 @@ func assertAnalyzerResult(t *testing.T, got *model.AnalyzerResult, tc analyzeTes
 	if got.Headings.H2 != tc.wantH2Count {
 		t.Errorf("expected %d H2 tags, got %d", tc.wantH2Count, got.Headings.H2)
 	}
+	if got.Headings.H3 != tc.wantH3Count {
+		t.Errorf("expected %d H2 tags, got %d", tc.wantH2Count, got.Headings.H2)
+	}
+	if got.Headings.H4 != tc.wantH4Count {
+		t.Errorf("expected %d H2 tags, got %d", tc.wantH2Count, got.Headings.H2)
+	}
+	if got.Headings.H5 != tc.wantH5Count {
+		t.Errorf("expected %d H2 tags, got %d", tc.wantH2Count, got.Headings.H2)
+	}
+	if got.Headings.H6 != tc.wantH6Count {
+		t.Errorf("expected %d H2 tags, got %d", tc.wantH2Count, got.Headings.H2)
+	}
 	if got.InternalLinks != tc.wantInternal {
 		t.Errorf("expected %d internal links, got %d", tc.wantInternal, got.InternalLinks)
 	}
