@@ -4,7 +4,7 @@ import (
 	"github.com/sendurangr/url-analyzer-api/internal/handler"
 	"github.com/sendurangr/url-analyzer-api/internal/middleware"
 	"github.com/sendurangr/url-analyzer-api/internal/routes"
-	"github.com/sendurangr/url-analyzer-api/internal/services"
+	"github.com/sendurangr/url-analyzer-api/internal/urlanalyzer"
 	"log/slog"
 	"os"
 
@@ -12,21 +12,24 @@ import (
 )
 
 func main() {
-	r := gin.Default()
+	if err := run(); err != nil {
+		slog.Error("server exited with error", "error", err)
+		os.Exit(1)
+	}
+}
 
+func run() error {
+	r := gin.Default()
 	r.Use(middleware.Cors())
 
 	apiGroup := r.Group("/api/v1")
-
-	analyzerService := services.NewAnalyzerService()
-	analyzerHandler := handler.NewAnalyzerHandler(analyzerService)
-
+	analyzerHandler := handler.NewAnalyzerHandler(urlanalyzer.NewAnalyzerService())
 	routes.SetupRouters(apiGroup, analyzerHandler)
 
-	err := r.Run(":8080")
-
-	if err != nil {
-		slog.Error("Server startup failed", "error", err)
-		os.Exit(1)
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
 	}
+
+	return r.Run(":" + port)
 }

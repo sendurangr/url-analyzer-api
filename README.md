@@ -1,17 +1,16 @@
 # URL Analyzer - Backend
 
 <!-- TOC -->
-
 * [URL Analyzer - Backend](#url-analyzer---backend)
-    * [💻 Local Setup Guide](#-local-setup-guide)
-        * [Prerequisites](#prerequisites)
-        * [Installation](#installation)
-    * [🤙 API Documentation](#-api-documentation)
-    * [🪐 Deployment](#-deployment)
-        * [✅ CI/CD](#-cicd)
-    * [🔅 Linked Repositories](#-linked-repositories)
-    * [Packages Used](#packages-used)
-
+  * [💻 Local Setup Guide](#-local-setup-guide)
+    * [Prerequisites](#prerequisites)
+    * [Installation](#installation)
+  * [🤙 API Documentation](#-api-documentation)
+  * [🪐 Deployment](#-deployment)
+    * [✅ CI/CD](#-cicd)
+  * [🔅 Linked Repositories](#-linked-repositories)
+* [Technical Explanations & Validations](#technical-explanations--validations)
+  * [Dependencies Used](#dependencies-used)
 <!-- TOC -->
 
 ## 💻 Local Setup Guide
@@ -78,7 +77,10 @@ curl --request GET \
 | Deployment Infrastructure - AWS | https://github.com/sendurangr/url-analyzer-infrastructure <br> (Provisioning through Terraform) |
 | Frontend - Angular              | https://github.com/sendurangr/url-analyzer-client                                               |
 
-## Packages Used
 
-- `go-chi/chi` - A lightweight and idiomatic router for building Go HTTP services.
-- `golang.org/x/net/html` - A package for parsing HTML documents.
+# Technical Explanations & Validations
+
+## Dependencies Used
+- `github.com/gin-contrib/cors`
+- `github.com/gin-gonic/gin`
+- `golang.org/x/net`

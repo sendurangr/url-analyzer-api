@@ -1,4 +1,4 @@
-package services
+package urlanalyzer
 
 import (
 	"github.com/sendurangr/url-analyzer-api/internal/model"

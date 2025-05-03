@@ -1,9 +1,11 @@
-package services
+package urlanalyzer
 
 import (
 	"context"
 	"github.com/sendurangr/url-analyzer-api/internal/constants"
 	"github.com/sendurangr/url-analyzer-api/internal/model"
+	"io"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"sync"
@@ -20,21 +22,27 @@ func checkLinksConcurrently(links []string, baseURL *url.URL, result *model.Anal
 		isAccessible bool
 	}
 
-	resultsChannel := make(chan linkResult, len(links))
+	resultsChan := make(chan linkResult, len(links))
+
+	// Limit the number of concurrent requests to avoid overwhelming the server
+	sem := make(chan struct{}, constants.LinkCheckerConcurrentLimit)
 
 	for _, link := range links {
 		wg.Add(1)
 		go func(link string) {
 			defer wg.Done()
+			sem <- struct{}{}
+			defer func() { <-sem }()
+
 			isInternal, isAccessible := checkSingleLink(ctx, link, baseURL)
-			resultsChannel <- linkResult{isInternal, isAccessible}
+			resultsChan <- linkResult{isInternal, isAccessible}
 		}(link)
 	}
 
 	wg.Wait()
-	close(resultsChannel)
+	close(resultsChan)
 
-	for r := range resultsChannel {
+	for r := range resultsChan {
 		if r.isInternal {
 			result.InternalLinks++
 			if !r.isAccessible {
@@ -67,6 +75,13 @@ func checkSingleLink(ctx context.Context, link string, baseURL *url.URL) (isInte
 	if err != nil || resp.StatusCode >= 400 {
 		return isInternal, false
 	}
+
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+			slog.Error("failed to close response body", "error", err)
+		}
+	}(resp.Body)
 
 	return isInternal, true
 }

@@ -2,7 +2,7 @@ package handler
 
 import (
 	"github.com/gin-gonic/gin"
-	"github.com/sendurangr/url-analyzer-api/internal/services"
+	"github.com/sendurangr/url-analyzer-api/internal/urlanalyzer"
 	"github.com/sendurangr/url-analyzer-api/internal/utils"
 	"log/slog"
 	"net/http"
@@ -10,16 +10,17 @@ import (
 )
 
 type AnalyzerHandler struct {
-	Service services.AnalyzerService
+	Service urlanalyzer.AnalyzerService
 }
 
-func NewAnalyzerHandler(svc services.AnalyzerService) *AnalyzerHandler {
+func NewAnalyzerHandler(svc urlanalyzer.AnalyzerService) *AnalyzerHandler {
 	return &AnalyzerHandler{Service: svc}
 }
 
 func (h *AnalyzerHandler) UrlAnalyzerHandler(ctx *gin.Context) {
 	rawURL := ctx.Query("url")
 	if rawURL == "" {
+		slog.Warn("Missing 'url' query parameter")
 		utils.RespondWithError(ctx, http.StatusBadRequest, "Missing 'url' query parameter")
 		return
 	}

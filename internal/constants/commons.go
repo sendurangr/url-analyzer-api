@@ -1,6 +1,7 @@
 package constants
 
 const (
-	HTML5          = "HTML5"
-	TimeoutSeconds = 15
+	LinkCheckerConcurrentLimit = 50
+	HTML5                      = "HTML5"
+	TimeoutSeconds             = 15
 )

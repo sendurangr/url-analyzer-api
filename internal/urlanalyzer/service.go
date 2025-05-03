@@ -1,4 +1,4 @@
-package services
+package urlanalyzer
 
 import (
 	"fmt"

@@ -5,7 +5,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/sendurangr/url-analyzer-api/internal/handler"
 	"github.com/sendurangr/url-analyzer-api/internal/model"
-	_ "github.com/sendurangr/url-analyzer-api/internal/services"
+	_ "github.com/sendurangr/url-analyzer-api/internal/urlanalyzer"
 	"net/http"
 	"net/http/httptest"
 	"strings"
