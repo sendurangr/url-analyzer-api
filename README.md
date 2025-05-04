@@ -2,10 +2,11 @@
 
 <!-- TOC -->
 * [URL Analyzer - Backend](#url-analyzer---backend)
-  * [🚀 Access Url Analyzer Web App here : https://d2tiqwdij4sc1n.cloudfront.net](#-access-url-analyzer-web-app-here--httpsd2tiqwdij4sc1ncloudfrontnet)
+  * [🚀 Access Url Analyzer Web App here : <br> https://d2tiqwdij4sc1n.cloudfront.net](#-access-url-analyzer-web-app-here--br-httpsd2tiqwdij4sc1ncloudfrontnet)
   * [💻 Local Setup Guide](#-local-setup-guide)
     * [Prerequisites](#prerequisites)
     * [Installation](#installation)
+  * [👀 Demo](#-demo)
   * [🤙 API Documentation](#-api-documentation)
   * [🪐 Deployment](#-deployment)
     * [✅ CI/CD](#-cicd)
@@ -23,7 +24,7 @@
   * [💫 Suggestions on possible improvements of the application](#-suggestions-on-possible-improvements-of-the-application)
 <!-- TOC -->
 
-## 🚀 Access Url Analyzer Web App here : https://d2tiqwdij4sc1n.cloudfront.net
+## 🚀 Access Url Analyzer Web App here : <br> https://d2tiqwdij4sc1n.cloudfront.net
 
 ## 💻 Local Setup Guide
 
@@ -54,6 +55,17 @@
 
 ---
 
+## 👀 Demo
+
+**Demo - 1**
+![Demo](./docs/assets/demo1.gif)
+
+**Demo - 2**
+![Demo](./docs/assets/demo2.gif)
+
+
+---
+
 ## 🤙 API Documentation
 
 - The URL Analyze api is available at `http://localhost:8080/api/v1/url-analyzer?url=<your-url>`.
@@ -64,6 +76,9 @@ curl --request GET \
 ```
 
 ![api-screenshot](./docs/assets/api-screenshot.png)
+
+
+---
 
 ## 🪐 Deployment
 
@@ -127,6 +142,8 @@ ok      github.com/sendurangr/url-analyzer-api/internal/urlanalyzer     1.912s  
 - The integration tests are located in the `integrationtest` package.
 - The tests are run using the `go test ./...` command.
 
+---
+
 ## ⛔ Do we really need Prometheus in this application? No. Why?
 
 - The application is deployed in AWS App Runner, which integrates directly with **Amazon CloudWatch** for built-in
@@ -138,12 +155,16 @@ ok      github.com/sendurangr/url-analyzer-api/internal/urlanalyzer     1.912s  
 - Using **Prometheus** in this case adds unnecessary complexity when **CloudWatch provides sufficient observability**
   for most use cases (e.g., CPU, memory, request count, error rates).
 
+---
+
 ## ⛔ Do we need Rate Limiting in this application? No (under specific assumptions)
 
 - The application is deployed in AWS App Runner, which automatically scales based on CPU and memory thresholds.
 - App Runner will spin up instances and balance load accordingly.
 - ❗ However, if we need to protect against abusive clients, reduce cost, or safeguard downstream systems,
   then implementing rate limiting at the application level or using AWS WAF or API Gateway is recommended.
+
+---
 
 ## ✏️ Logging with `slog`
 
@@ -154,6 +175,8 @@ ok      github.com/sendurangr/url-analyzer-api/internal/urlanalyzer     1.912s  
     - It generally provides **better performance** and **integration** compared to older logging libraries like
       `logrus`.
 
+---
+
 ## ❓ Why I have not deployed to AWS Lambda?
 
 - AWS Lambda **can be a good fit** for this kind of lightweight, stateless application, But it comes with additional
@@ -161,6 +184,8 @@ ok      github.com/sendurangr/url-analyzer-api/internal/urlanalyzer     1.912s  
 - For effective local testing, you'd need to configure tools like **AWS SAM**, **LocalStack**, or Docker-based
   emulation.
 - Otherwise, lambda is a good fit for this application.
+
+---
 
 ## 🤯 Challenges faced and the approaches took to overcome
 
@@ -194,6 +219,8 @@ ok      github.com/sendurangr/url-analyzer-api/internal/urlanalyzer     1.912s  
     }
     
     ```
+
+---
 
 ## 💫 Suggestions on possible improvements of the application
 
