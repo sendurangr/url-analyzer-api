@@ -6,7 +6,6 @@ on:
       - master
 
 jobs:
-
   test:
     name: Run Tests for URL Analyzer
     runs-on: ubuntu-latest

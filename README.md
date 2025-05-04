@@ -2,6 +2,7 @@
 
 <!-- TOC -->
 * [URL Analyzer - Backend](#url-analyzer---backend)
+  * [🚀 Access Url Analyzer Web App here : https://d2tiqwdij4sc1n.cloudfront.net](#-access-url-analyzer-web-app-here--httpsd2tiqwdij4sc1ncloudfrontnet)
   * [💻 Local Setup Guide](#-local-setup-guide)
     * [Prerequisites](#prerequisites)
     * [Installation](#installation)
@@ -21,6 +22,8 @@
   * [🤯 Challenges faced and the approaches took to overcome](#-challenges-faced-and-the-approaches-took-to-overcome)
   * [💫 Suggestions on possible improvements of the application](#-suggestions-on-possible-improvements-of-the-application)
 <!-- TOC -->
+
+## 🚀 Access Url Analyzer Web App here : https://d2tiqwdij4sc1n.cloudfront.net
 
 ## 💻 Local Setup Guide
 
