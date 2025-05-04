@@ -22,6 +22,10 @@
   * [❓ Why I have not deployed to AWS Lambda?](#-why-i-have-not-deployed-to-aws-lambda)
   * [🤯 Challenges faced and the approaches took to overcome](#-challenges-faced-and-the-approaches-took-to-overcome)
   * [💫 Suggestions on possible improvements of the application](#-suggestions-on-possible-improvements-of-the-application)
+  * [Screenshots](#screenshots)
+    * [Backend Pipeline](#backend-pipeline-)
+    * [Frontend Pipeline](#frontend-pipeline)
+    * [Project Structure](#project-structure)
 <!-- TOC -->
 
 ## 🚀 Access Url Analyzer Web App here : <br> https://d2tiqwdij4sc1n.cloudfront.net
