@@ -18,6 +18,7 @@
     * [Integration Tests](#integration-tests)
   * [⛔ Do we really need Prometheus in this application? No. Why?](#-do-we-really-need-prometheus-in-this-application-no-why)
   * [⛔ Do we need Rate Limiting in this application? No (under specific assumptions)](#-do-we-need-rate-limiting-in-this-application-no-under-specific-assumptions)
+  * [💉 Dependency Injection](#-dependency-injection)
   * [✏️ Logging with `slog`](#-logging-with-slog)
   * [❓ Why I have not deployed to AWS Lambda?](#-why-i-have-not-deployed-to-aws-lambda)
   * [🤯 Challenges faced and the approaches took to overcome](#-challenges-faced-and-the-approaches-took-to-overcome)
@@ -169,6 +170,9 @@ ok      github.com/sendurangr/url-analyzer-api/internal/urlanalyzer     1.912s  
   then implementing rate limiting at the application level or using AWS WAF or API Gateway is recommended.
 
 ---
+
+## 💉 Dependency Injection
+- The application uses **Dependency Injection** to manage dependencies and improve testability.
 
 ## ✏️ Logging with `slog`
 
