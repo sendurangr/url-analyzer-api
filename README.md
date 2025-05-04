@@ -232,3 +232,17 @@ ok      github.com/sendurangr/url-analyzer-api/internal/urlanalyzer     1.912s  
     - Store the history of URLs analyzed by users.
     - Provide a feature to view previously analyzed URLs.
     - Using MongoDB or DynamoDB for storing the history.
+
+## Screenshots
+
+### Backend Pipeline 
+
+![Backend Pipeline](./docs/assets/pipeline-backend.png)
+
+
+### Frontend Pipeline
+![Frontend Pipeline](./docs/assets/pipeline-frontend.png)
+
+
+### Project Structure
+![Project Structure](./docs/assets/backend-project-structure.png)
