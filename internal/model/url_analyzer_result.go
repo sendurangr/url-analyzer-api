@@ -10,7 +10,7 @@ type AnalyzerResult struct {
 	InaccessibleExternalLinks int      `json:"inaccessibleExternalLinks"`
 	LoginFormDetected         bool     `json:"loginFormDetected"`
 	TimeTakenToAnalyze        float32  `json:"timeTakenToAnalyze"`
-	Url                       string   `json:"url"`
+	URL                       string   `json:"url"`
 }
 
 type Headings struct {

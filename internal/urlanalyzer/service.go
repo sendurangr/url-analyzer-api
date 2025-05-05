@@ -14,18 +14,22 @@ import (
 	"time"
 )
 
+// AnalyzerService Interface Definition for AnalyzerService
 type AnalyzerService interface {
 	AnalyzePage(url string) (*model.AnalyzerResult, error)
 }
 
+// AnalyzerService implementation
 type analyzer struct {
 	client *http.Client
 }
 
+// NewAnalyzer DI constructor for AnalyzerService
 func NewAnalyzer(client *http.Client) AnalyzerService {
 	return &analyzer{client: client}
 }
 
+// AnalyzePage fetches the HTML content of the given URL and analyzes it for various attributes.
 func (a *analyzer) AnalyzePage(rawURL string) (*model.AnalyzerResult, error) {
 	start := time.Now()
 
@@ -70,7 +74,7 @@ func (a *analyzer) AnalyzePage(rawURL string) (*model.AnalyzerResult, error) {
 	result := &model.AnalyzerResult{}
 	a.iterateThroughDOM(doc, result, parsedURL)
 	result.TimeTakenToAnalyze = float32(time.Since(start).Seconds())
-	result.Url = rawURL
+	result.URL = rawURL
 
 	return result, nil
 }
