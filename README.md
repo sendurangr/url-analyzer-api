@@ -2,10 +2,12 @@
 
 <!-- TOC -->
 * [URL Analyzer - Backend](#url-analyzer---backend)
+  * [Tools Used](#tools-used)
   * [🚀 Access URL Analyzer Web App here : <br> https://d2tiqwdij4sc1n.cloudfront.net](#-access-url-analyzer-web-app-here--br-httpsd2tiqwdij4sc1ncloudfrontnet)
   * [💻 Local Setup Guide](#-local-setup-guide)
     * [Prerequisites](#prerequisites)
     * [Installation](#installation)
+    * [Want to run the server in Docker?](#want-to-run-the-server-in-docker)
   * [👀 Demo](#-demo)
   * [🤙 API Documentation](#-api-documentation)
   * [🪐 Deployment](#-deployment)
@@ -24,10 +26,36 @@
   * [🤯 Challenges faced and the approaches took to overcome](#-challenges-faced-and-the-approaches-took-to-overcome)
   * [💫 Suggestions on possible improvements of the application](#-suggestions-on-possible-improvements-of-the-application)
   * [Screenshots](#screenshots)
-    * [Backend Pipeline](#backend-pipeline-)
+    * [Backend Pipeline](#backend-pipeline)
     * [Frontend Pipeline](#frontend-pipeline)
     * [Project Structure](#project-structure)
 <!-- TOC -->
+
+## Tools Used
+- **Golang** - Backend
+- **Angular** - Frontend
+  - Tailwind
+  - PrimeNG
+- **AWS** - Deployment 
+  - App Runner - Backend
+  - ECR - Docker Registry
+  - S3 (frontend)
+  - CloudFront 
+  - CloudWatch (logs)
+- **Terraform** - Infrastructure as Code 
+  - Provisioning AWS resources
+- **GitHub Actions** - CI/CD
+- **Bruno** / **Postman** - API Testing
+- **Docker** - Containerization
+
+<p align="center">
+  <img src="https://openupthecloud.com/wp-content/uploads/2020/01/Golang.png" alt="Go" height="60" style="border-radius:4px; margin: 0 6px;" />
+  <img src="https://logowik.com/content/uploads/images/angular9826.logowik.com.webp" alt="Angular" height="60" style="border-radius:4px; margin: 0 6px;" />
+  <img src="https://www.docker.com/app/uploads/2023/08/logo-guide-logos-1.svg" alt="Docker" height="60" style="border-radius:4px; margin: 0 6px;" />
+  <img src="https://seeklogo.com/images/T/terraform-logo-CDD45E1CF7-seeklogo.com.png" alt="Terraform" height="60" style="border-radius:4px; margin: 0 6px;" />
+  <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTW2RxJnT5OYNip6wdUeU_kYkEA33op5Z6pYQ&s" alt="LastLogo" height="60" style="border-radius:4px; margin: 0 6px;" />
+</p>
+
 
 ## 🚀 Access URL Analyzer Web App here : <br> https://d2tiqwdij4sc1n.cloudfront.net
 
@@ -35,7 +63,9 @@
 
 ### Prerequisites
 
-- Go 1.20 or later (go 1.24.x)
+- **Go 1.24.2** or later version installed.
+- Docker installed (if you want to run the server in Docker).
+- Postman or any API testing tool (for testing the API).
 
 ### Installation
 
@@ -57,6 +87,19 @@
 
 4. The server will start on `localhost:8080` by default.
    Health Check endpoint is available at `http://localhost:8080/health`
+
+### Want to run the server in Docker?
+
+- Build the Docker image:
+  ```bash
+  docker build . -t url-analyzer-image
+  ```
+
+- Run the Docker container:
+    ```bash
+    docker run --name url-analyzer-image-container -d -p 8080:8080 url-analyzer-image:latest
+    ```
+- The server will be available at `http://localhost:8080`.
 
 ---
 
@@ -98,7 +141,7 @@ curl --request GET \
 
 - The **CI/CD** pipeline is set up using **GitHub Actions**.
 - The pipeline is triggered on every push to the `master` branch.
-- The pipeline builds the Docker image and deploys it to AWS App Runner through <br>
+- The pipeline builds the **Docker image** and deploys it to AWS App Runner through <br>
   `GitHub Actions -> AWS ECR -> AWS App Runner`.
 
 ## 🔅 Linked Repositories - (Frontend, Infrastructure)
@@ -172,6 +215,7 @@ ok      github.com/sendurangr/url-analyzer-api/internal/urlanalyzer     1.912s  
 ---
 
 ## 💉 Dependency Injection
+
 - Used DI with analyzer - It keeps the analyzer loosely coupled and focused only on its core logic.
 - Improves testability by allowing us to inject mock or stub implementations of the analyzer interface during testing.
 - Makes it easier to swap out the analyzer implementation in the future if needed.
@@ -200,9 +244,13 @@ ok      github.com/sendurangr/url-analyzer-api/internal/urlanalyzer     1.912s  
 
 ## 🤯 Challenges faced and the approaches took to overcome
 
-- **Don't know Golang** - This is the first time I am doing Golang. Therefore, I had to learn the language and its
-  idioms
-  before doing this project.
+- **New to golang** - This is the first time I am working in Golang. Therefore,
+  <br> to bring the production level code quality i had to go through the so many documentation and articles.
+  <br>Ref :
+    - Youtube Videos
+    - Go Official Documentation
+    - https://go.dev/talks/2013/bestpractices.slide
+    - https://go.dev/doc/effective_go
 - **Goroutines, Channels, Context** - I had to learn how to use goroutines, channels, and context in Golang.
   <br> I used goroutines to make the URL analysis concurrent and channels to communicate between the goroutines. I used
   context to manage the lifecycle of the goroutines and to cancel them if needed.
@@ -246,14 +294,14 @@ ok      github.com/sendurangr/url-analyzer-api/internal/urlanalyzer     1.912s  
 
 ## Screenshots
 
-### Backend Pipeline 
+### Backend Pipeline
 
 ![Backend Pipeline](./docs/assets/pipeline-backend.png)
 
-
 ### Frontend Pipeline
+
 ![Frontend Pipeline](./docs/assets/pipeline-frontend.png)
 
-
 ### Project Structure
+
 ![Project Structure](./docs/assets/backend-project-structure.png)
