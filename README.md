@@ -172,7 +172,10 @@ ok      github.com/sendurangr/url-analyzer-api/internal/urlanalyzer     1.912s  
 ---
 
 ## 💉 Dependency Injection
-- The application uses **Dependency Injection** to manage dependencies and improve testability.
+- Used DI with analyzer - It keeps the analyzer loosely coupled and focused only on its core logic.
+- Improves testability by allowing us to inject mock or stub implementations of the analyzer interface during testing.
+- Makes it easier to swap out the analyzer implementation in the future if needed.
+- Used constructor-based dependency injection instead of hardcoding dependencies.
 
 ## ✏️ Logging with `slog`
 
