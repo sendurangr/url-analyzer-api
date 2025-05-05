@@ -30,7 +30,7 @@ func run() error {
 	}
 
 	apiGroup := r.Group("/api/v1")
-	analyzerHandler := handler.NewAnalyzerHandler(urlanalyzer.NewAnalyzerService(httpClient))
+	analyzerHandler := handler.NewAnalyzerHandler(urlanalyzer.NewAnalyzer(httpClient))
 	routes.SetupRouters(apiGroup, analyzerHandler)
 
 	port := os.Getenv("PORT")

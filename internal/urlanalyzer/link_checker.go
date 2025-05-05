@@ -11,7 +11,7 @@ import (
 	"sync"
 )
 
-func (a *analyzerServiceImpl) checkLinksConcurrently(links []string, baseURL *url.URL, result *model.AnalyzerResult) {
+func (a *analyzer) checkLinksConcurrently(links []string, baseURL *url.URL, result *model.AnalyzerResult) {
 	var wg sync.WaitGroup
 	ctx, cancel := context.WithTimeout(context.Background(), constants.ContextTimeout)
 	defer cancel()
@@ -56,7 +56,7 @@ func (a *analyzerServiceImpl) checkLinksConcurrently(links []string, baseURL *ur
 	}
 }
 
-func (a *analyzerServiceImpl) checkSingleLink(ctx context.Context, link string, baseURL *url.URL) (isInternal bool, isAccessible bool) {
+func (a *analyzer) checkSingleLink(ctx context.Context, link string, baseURL *url.URL) (isInternal bool, isAccessible bool) {
 	linkURL, err := url.Parse(link)
 	if err != nil {
 		return false, false

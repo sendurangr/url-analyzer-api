@@ -18,15 +18,15 @@ type AnalyzerService interface {
 	AnalyzePage(url string) (*model.AnalyzerResult, error)
 }
 
-type analyzerServiceImpl struct {
+type analyzer struct {
 	client *http.Client
 }
 
-func NewAnalyzerService(client *http.Client) AnalyzerService {
-	return &analyzerServiceImpl{client: client}
+func NewAnalyzer(client *http.Client) AnalyzerService {
+	return &analyzer{client: client}
 }
 
-func (a *analyzerServiceImpl) AnalyzePage(rawURL string) (*model.AnalyzerResult, error) {
+func (a *analyzer) AnalyzePage(rawURL string) (*model.AnalyzerResult, error) {
 	start := time.Now()
 
 	ctx, cancel := context.WithTimeout(context.Background(), constants.ContextTimeout)
@@ -75,7 +75,7 @@ func (a *analyzerServiceImpl) AnalyzePage(rawURL string) (*model.AnalyzerResult,
 	return result, nil
 }
 
-func (a *analyzerServiceImpl) iterateThroughDOM(n *html.Node, result *model.AnalyzerResult, baseURL *url.URL) {
+func (a *analyzer) iterateThroughDOM(n *html.Node, result *model.AnalyzerResult, baseURL *url.URL) {
 	var links []string
 
 	var collectLinks func(*html.Node)

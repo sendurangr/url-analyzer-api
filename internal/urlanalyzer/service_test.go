@@ -119,7 +119,7 @@ func TestAnalyzePage_TableDrivenTestCases(t *testing.T) {
 		},
 	}
 
-	service := NewAnalyzerService(httpClient)
+	service := NewAnalyzer(httpClient)
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
@@ -188,7 +188,7 @@ func TestAnalyzePage_InaccessibleLinks(t *testing.T) {
 	ts := startTestServer(html)
 	defer ts.Close()
 
-	service := NewAnalyzerService(httpClient)
+	service := NewAnalyzer(httpClient)
 
 	result, err := service.AnalyzePage(ts.URL)
 	if err != nil {
@@ -223,7 +223,7 @@ func TestAnalyzePage_ErrorHandling(t *testing.T) {
 			ts := httptest.NewServer(tc.handler)
 			defer ts.Close()
 
-			service := NewAnalyzerService(httpClient)
+			service := NewAnalyzer(httpClient)
 
 			_, err := service.AnalyzePage(ts.URL)
 			if err == nil || !strings.Contains(err.Error(), tc.wantErrMsg) {
