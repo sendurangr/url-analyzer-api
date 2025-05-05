@@ -17,7 +17,7 @@ func setupRouter() *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	r := gin.Default()
 
-	analyzer := handler.NewAnalyzerHandler(urlanalyzer.NewAnalyzerService(&http.Client{}))
+	analyzer := handler.NewAnalyzerHandler(urlanalyzer.NewAnalyzer(&http.Client{}))
 	api := r.Group("/api/v1")
 	routes.SetupRouters(api, analyzer)
 
