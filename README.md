@@ -52,7 +52,7 @@
   <img src="https://openupthecloud.com/wp-content/uploads/2020/01/Golang.png" alt="Go" height="60" style="border-radius:4px; margin: 0 6px;" />
   <img src="https://logowik.com/content/uploads/images/angular9826.logowik.com.webp" alt="Angular" height="60" style="border-radius:4px; margin: 0 6px;" />
   <img src="https://www.docker.com/app/uploads/2023/08/logo-guide-logos-1.svg" alt="Docker" height="60" style="border-radius:4px; margin: 0 6px;" />
-  <img src="https://seeklogo.com/images/T/terraform-logo-CDD45E1CF7-seeklogo.com.png" alt="Terraform" height="60" style="border-radius:4px; margin: 0 6px;" />
+  <img src="https://miro.medium.com/v2/resize:fit:600/1*rxaaiY8J_jR0Cy57jnWRzA.jpeg" alt="Terraform" height="60" style="border-radius:4px; margin: 0 6px;" />
   <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTW2RxJnT5OYNip6wdUeU_kYkEA33op5Z6pYQ&s" alt="LastLogo" height="60" style="border-radius:4px; margin: 0 6px;" />
 </p>
 
